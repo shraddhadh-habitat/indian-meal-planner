@@ -78,7 +78,7 @@ function getTodayMealText(): string {
     `🌤 <b>Lunch:</b> ${l?.name ?? meals.lunch}\n` +
     `🌙 <b>Dinner:</b> ${d?.name ?? meals.dinner}\n\n` +
     `💪 Protein: ~${((b?.proteinPerServing ?? 0) + (l?.proteinPerServing ?? 0) + (d?.proteinPerServing ?? 0)) * 3}g total\n\n` +
-    `Open bhojanplanner.app for the full recipe`
+    `Open https://indian-meal-planner.vercel.app for the full recipe`
   );
 }
 
