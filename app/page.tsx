@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Recipe, WeeklyPlan } from './types';
 import { getRecipeById } from './data/recipes';
 import { DAYS, fixedDefaultPlan, generateShuffledPlan } from './data/weeklyPlan';
@@ -8,17 +8,22 @@ import MealCard from './components/MealCard';
 import RecipeModal from './components/RecipeModal';
 import ProteinDashboard from './components/ProteinDashboard';
 import FilterBar from './components/FilterBar';
+import AuthButton from './components/AuthButton';
+import GroupPanel from './components/GroupPanel';
+import { useAuth } from './providers';
 
 const SERVINGS = 3;
 const RECIPE_COUNT = 55;
 
 export default function Home() {
+  const { user } = useAuth();
   const [plan, setPlan] = useState<WeeklyPlan>(fixedDefaultPlan);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [selectedDay, setSelectedDay] = useState<string | 'all'>('all');
   const [dietFilter, setDietFilter] = useState<'all' | 'veg' | 'non-veg'>('all');
   const [shuffling, setShuffling] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
 
   const handleShuffle = useCallback(() => {
     setShuffling(true);
@@ -32,6 +37,16 @@ export default function Home() {
     const recipe = getRecipeById(recipeId);
     if (recipe) setSelectedRecipe(recipe);
   }, []);
+
+  // Save plan to group whenever it changes
+  useEffect(() => {
+    if (!activeGroupId) return;
+    fetch(`/api/groups/${activeGroupId}/plan`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan }),
+    }).catch(() => {});
+  }, [plan, activeGroupId]);
 
   const visibleDays = selectedDay === 'all' ? DAYS : [selectedDay];
 
@@ -65,6 +80,7 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-col gap-2 items-end">
+              <AuthButton />
               <button
                 onClick={handleShuffle}
                 disabled={shuffling}
@@ -87,6 +103,15 @@ export default function Home() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-5 space-y-5">
+        {/* Group panel — only for signed-in users */}
+        {user && (
+          <GroupPanel
+            currentPlan={plan}
+            onGroupPlanLoaded={setPlan}
+            onGroupChange={setActiveGroupId}
+          />
+        )}
+
         {/* Protein dashboard */}
         {showDashboard && <ProteinDashboard plan={plan} servings={SERVINGS} />}
 
@@ -157,6 +182,11 @@ export default function Home() {
         <footer className="text-center text-xs text-gray-400 py-6 border-t border-orange-100">
           <p>Bhojan Planner · {RECIPE_COUNT} recipes · Practical Indian cooking for busy women</p>
           <p className="mt-1">Protein values are estimates. Tap any meal card to see the full recipe.</p>
+          <p className="mt-2">
+            <a href="https://t.me/BhojanPlannerBot" className="text-orange-400 hover:text-orange-600 underline" target="_blank" rel="noreferrer">
+              ✈️ Get daily plans on Telegram
+            </a>
+          </p>
         </footer>
       </main>
 
