@@ -5,7 +5,7 @@ export default function SiteFooter() {
     <footer className="bg-gray-900 text-gray-400 text-xs py-6 px-4 mt-auto">
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
         <p className="text-center sm:text-left leading-relaxed">
-          © 2026 Bhojan Planner. All rights reserved.{' '}
+          © 2026 Aharam. All rights reserved.{' '}
           <span className="block sm:inline">
             Unauthorized copying or reproduction is prohibited.
           </span>

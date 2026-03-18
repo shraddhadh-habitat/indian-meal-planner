@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Use – Bhojan Planner',
+  title: 'Terms of Use – Aharam',
 };
 
 export default function TermsPage() {
@@ -11,7 +11,7 @@ export default function TermsPage() {
       <header className="bg-gradient-to-r from-orange-600 to-amber-500 text-white px-4 py-5">
         <div className="max-w-3xl mx-auto">
           <Link href="/" className="text-orange-100 text-sm hover:text-white mb-3 inline-block">
-            ← Back to Bhojan Planner
+            ← Back to Aharam
           </Link>
           <h1 className="text-2xl font-bold">Terms of Use</h1>
           <p className="text-orange-100 text-sm mt-1">Last updated: January 2026</p>
@@ -23,7 +23,7 @@ export default function TermsPage() {
         <section className="bg-white rounded-xl border border-orange-100 p-6 shadow-sm space-y-3">
           <h2 className="text-lg font-bold text-gray-800">1. Ownership and Copyright</h2>
           <p className="leading-relaxed">
-            Bhojan Planner — including its name, logo, design, all recipe text, ingredient lists,
+            Aharam — including its name, logo, design, all recipe text, ingredient lists,
             cooking instructions, nutritional data, meal planning logic, and all other written and
             visual content — is the original creative work of its owner (<strong>shraddhadh@gmail.com</strong>)
             and is protected under applicable copyright law.
@@ -40,7 +40,7 @@ export default function TermsPage() {
         <section className="bg-white rounded-xl border border-orange-100 p-6 shadow-sm space-y-3">
           <h2 className="text-lg font-bold text-gray-800">2. Permitted Use</h2>
           <p className="leading-relaxed">
-            You may use Bhojan Planner for your own personal, non-commercial meal planning.
+            You may use Aharam for your own personal, non-commercial meal planning.
             You may print or save individual meal plans and recipes for your private household use.
           </p>
           <p className="leading-relaxed">
@@ -73,7 +73,7 @@ export default function TermsPage() {
             tool based on keyword matching of listed ingredients. They do not account for
             cross-contamination, shared cooking surfaces, or unlisted trace ingredients.
             Users with severe food allergies or intolerances must independently verify
-            every recipe before consumption. Bhojan Planner accepts no liability for
+            every recipe before consumption. Aharam accepts no liability for
             adverse reactions arising from use of the allergy filter.
           </p>
           <p className="leading-relaxed">
@@ -86,7 +86,7 @@ export default function TermsPage() {
         <section className="bg-white rounded-xl border border-orange-100 p-6 shadow-sm space-y-3">
           <h2 className="text-lg font-bold text-gray-800">5. User Accounts</h2>
           <p className="leading-relaxed">
-            Signing in with Google grants Bhojan Planner access to your Google account
+            Signing in with Google grants Aharam access to your Google account
             email address and profile information solely for the purpose of identifying
             your account and saving your meal planning preferences. We do not access
             your Google Drive, Gmail, or any other Google services.

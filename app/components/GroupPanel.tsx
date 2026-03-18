@@ -28,7 +28,7 @@ export default function GroupPanel({ currentPlan, onGroupPlanLoaded, onGroupChan
 
   // Persist active group in localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('bhojan_group');
+    const saved = localStorage.getItem('aharam_group');
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as Group;
@@ -42,16 +42,16 @@ export default function GroupPanel({ currentPlan, onGroupPlanLoaded, onGroupChan
           })
           .catch(() => {});
       } catch {
-        localStorage.removeItem('bhojan_group');
+        localStorage.removeItem('aharam_group');
       }
     }
   }, []);
 
   const saveGroup = (g: Group | null) => {
     if (g) {
-      localStorage.setItem('bhojan_group', JSON.stringify(g));
+      localStorage.setItem('aharam_group', JSON.stringify(g));
     } else {
-      localStorage.removeItem('bhojan_group');
+      localStorage.removeItem('aharam_group');
     }
     setGroup(g);
     onGroupChange(g?.id ?? null);

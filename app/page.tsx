@@ -61,7 +61,7 @@ export default function Home() {
 
   // Load preferences: localStorage first, then Supabase if signed in
   useEffect(() => {
-    const stored = localStorage.getItem('bhojan-prefs');
+    const stored = localStorage.getItem('aharam-prefs');
     if (stored) {
       try {
         const p = JSON.parse(stored);
@@ -87,7 +87,7 @@ export default function Home() {
   // Persist preferences on change (localStorage always; Supabase when signed in, debounced)
   useEffect(() => {
     const prefs = { avoidances, ibsMode, servings };
-    localStorage.setItem('bhojan-prefs', JSON.stringify(prefs));
+    localStorage.setItem('aharam-prefs', JSON.stringify(prefs));
     if (!user) return;
     if (prefSaveTimer.current) clearTimeout(prefSaveTimer.current);
     prefSaveTimer.current = setTimeout(() => {
@@ -123,7 +123,7 @@ export default function Home() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                🍛 Bhojan Planner
+                🍛 Aharam
               </h1>
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-orange-100 text-sm">Weekly Indian meal plan</p>
@@ -253,10 +253,10 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="text-center text-xs text-gray-400 py-6 border-t border-orange-100">
-          <p>Bhojan Planner · {RECIPE_COUNT} recipes · Practical Indian cooking for busy women</p>
+          <p>Aharam · {RECIPE_COUNT} recipes · Practical Indian cooking for busy women</p>
           <p className="mt-1">Protein values are estimates. Tap any meal card to see the full recipe.</p>
           <p className="mt-2">
-            <a href="https://t.me/BhojanPlannerBot" className="text-orange-400 hover:text-orange-600 underline" target="_blank" rel="noreferrer">
+            <a href="https://t.me/AharamBot" className="text-orange-400 hover:text-orange-600 underline" target="_blank" rel="noreferrer">
               ✈️ Get daily plans on Telegram
             </a>
           </p>

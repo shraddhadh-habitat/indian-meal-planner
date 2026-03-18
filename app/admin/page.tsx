@@ -50,7 +50,7 @@ export default function AdminPage() {
       <header className="bg-gradient-to-r from-orange-600 to-amber-500 text-white px-6 py-5">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Bhojan Planner — Admin</h1>
+            <h1 className="text-2xl font-bold">Aharam — Admin</h1>
             <p className="text-orange-100 text-sm mt-0.5">Logged in as {user?.email}</p>
           </div>
           <a href="/" className="text-sm text-white/80 hover:text-white underline">← Back to app</a>

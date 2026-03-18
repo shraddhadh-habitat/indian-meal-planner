@@ -19,7 +19,7 @@ export default function LoginPage() {
       <div className="bg-white rounded-2xl shadow-lg p-8 max-w-sm w-full mx-4">
         <div className="text-center mb-8">
           <p className="text-5xl mb-3">🍛</p>
-          <h1 className="text-2xl font-bold text-gray-800">Bhojan Planner</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Aharam</h1>
           <p className="text-gray-500 text-sm mt-2">
             Sign in to save your meal plan and collaborate with your group
           </p>

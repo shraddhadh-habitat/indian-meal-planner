@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     await sendMessage(
       chatId,
-      `🍛 <b>Welcome to Bhojan Planner!</b>\n\nYou'll receive today's meal plan every morning at 7:00 AM IST.\n\nCommands:\n/today — today's meal plan\n/week — full week plan\n/stop — unsubscribe`
+      `🍛 <b>Welcome to Aharam!</b>\n\nYou'll receive today's meal plan every morning at 7:00 AM IST.\n\nCommands:\n/today — today's meal plan\n/week — full week plan\n/stop — unsubscribe`
     );
   } else if (text.startsWith('/stop')) {
     await admin.from('telegram_chats').delete().eq('chat_id', chatId);
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
   } else {
     await sendMessage(
       chatId,
-      `🍛 <b>Bhojan Planner</b>\n\nCommands:\n/today — today's meals\n/week — full week\n/stop — unsubscribe`
+      `🍛 <b>Aharam</b>\n\nCommands:\n/today — today's meals\n/week — full week\n/stop — unsubscribe`
     );
   }
 

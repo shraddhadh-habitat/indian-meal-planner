@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Bhojan Planner – Weekly Indian Meal Planner',
+  title: 'Aharam – Weekly Indian Meal Planner',
   description:
-    'A weekly Indian meal planner. 55 recipes with protein tracking for 3 people.',
+    'A weekly Indian meal planner. 145 recipes with protein tracking across diet modes.',
 };
 
 export default function RootLayout({

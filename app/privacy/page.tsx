@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy – Bhojan Planner',
+  title: 'Privacy Policy – Aharam',
 };
 
 export default function PrivacyPage() {
@@ -11,7 +11,7 @@ export default function PrivacyPage() {
       <header className="bg-gradient-to-r from-orange-600 to-amber-500 text-white px-4 py-5">
         <div className="max-w-3xl mx-auto">
           <Link href="/" className="text-orange-100 text-sm hover:text-white mb-3 inline-block">
-            ← Back to Bhojan Planner
+            ← Back to Aharam
           </Link>
           <h1 className="text-2xl font-bold">Privacy Policy</h1>
           <p className="text-orange-100 text-sm mt-1">Last updated: January 2026</p>
