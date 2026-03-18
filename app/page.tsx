@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Recipe, WeeklyPlan, DietMode, CuisineType, AllergyItem } from './types';
 import { getRecipeById } from './data/recipes';
-import { DAYS, fixedDefaultPlan, generateShuffledPlan } from './data/weeklyPlan';
+import { DAYS, fixedDefaultPlan, generateShuffledPlan, generatePlanForDietMode } from './data/weeklyPlan';
 import { recipeIsSafe } from './lib/allergyUtils';
 import MealCard from './components/MealCard';
 import RecipeModal from './components/RecipeModal';
@@ -35,9 +35,14 @@ export default function Home() {
   const handleShuffle = useCallback(() => {
     setShuffling(true);
     setTimeout(() => {
-      setPlan(generateShuffledPlan());
+      setPlan(generatePlanForDietMode(dietMode));
       setShuffling(false);
     }, 400);
+  }, [dietMode]);
+
+  const handleDietModeChange = useCallback((mode: DietMode) => {
+    setDietMode(mode);
+    setPlan(mode === 'all' ? fixedDefaultPlan : generatePlanForDietMode(mode));
   }, []);
 
   const handleMealClick = useCallback((recipeId: string) => {
@@ -100,11 +105,6 @@ export default function Home() {
   const mealPassesFilter = (recipeId: string) => {
     const recipe = getRecipeById(recipeId);
     if (!recipe) return false;
-
-    if (dietMode !== 'all') {
-      const effectiveDietMode = recipe.dietMode ?? 'veg';
-      if (effectiveDietMode !== dietMode) return false;
-    }
 
     if (cuisineFilter !== 'all') {
       const effectiveCuisine = recipe.cuisine ?? 'maharashtrian';
@@ -194,7 +194,7 @@ export default function Home() {
           selectedDay={selectedDay}
           onDayChange={setSelectedDay}
           dietMode={dietMode}
-          onDietModeChange={setDietMode}
+          onDietModeChange={handleDietModeChange}
           cuisineFilter={cuisineFilter}
           onCuisineChange={setCuisineFilter}
         />

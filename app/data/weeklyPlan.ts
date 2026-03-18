@@ -1,5 +1,5 @@
-import { WeeklyPlan } from '../types';
-import { breakfastRecipes, lunchRecipes, dinnerRecipes } from './recipes';
+import { WeeklyPlan, DietMode, Recipe } from '../types';
+import { breakfastRecipes, lunchRecipes, dinnerRecipes, recipes } from './recipes';
 
 export const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -50,6 +50,37 @@ export const fixedDefaultPlan: WeeklyPlan = defaultWeeklyPlan;
 
 function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function poolForMode(mode: DietMode): Recipe[] {
+  if (mode === 'all') return recipes;
+  if (mode === 'non-veg') return recipes.filter((r) => r.diet === 'non-veg');
+  if (mode === 'mix') return recipes.filter((r) => !r.dietMode || r.dietMode === 'veg' || r.diet === 'non-veg');
+  if (mode === 'veg') return recipes.filter((r) => !r.dietMode || r.dietMode === 'veg');
+  // eggetarian | vegan | kids-tiffin
+  return recipes.filter((r) => r.dietMode === mode);
+}
+
+export function generatePlanForDietMode(mode: DietMode): WeeklyPlan {
+  const pool = poolForMode(mode);
+  const b = pool.filter((r) => r.type === 'breakfast');
+  const l = pool.filter((r) => r.type === 'lunch');
+  const d = pool.filter((r) => r.type === 'dinner');
+
+  // Fallback to full pool if any meal type is empty
+  const safeB = b.length ? b : breakfastRecipes;
+  const safeL = l.length ? l : lunchRecipes;
+  const safeD = d.length ? d : dinnerRecipes;
+
+  const plan: WeeklyPlan = {};
+  DAYS.forEach((day) => {
+    plan[day] = {
+      breakfast: pickRandom(safeB).id,
+      lunch: pickRandom(safeL).id,
+      dinner: pickRandom(safeD).id,
+    };
+  });
+  return plan;
 }
 
 export function generateShuffledPlan(): WeeklyPlan {
