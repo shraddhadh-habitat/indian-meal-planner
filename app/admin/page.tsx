@@ -1,31 +1,53 @@
-import { redirect } from 'next/navigation';
-import { createSupabaseServerClient, createSupabaseAdmin } from '@/lib/supabase-server';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import { useEffect, useState } from 'react';
+import { useAuth } from '@/app/providers';
 
-export default async function AdminPage() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
+type Visit = { id: string; path: string; user_id: string | null; ip: string; created_at: string };
+type Group = { id: string; name: string; share_code: string; created_at: string; group_members: { count: number }[] };
+type TelegramChat = { chat_id: string; created_at: string };
+type AuthUser = { id: string; email?: string; created_at: string; user_metadata?: { full_name?: string; avatar_url?: string } };
 
-  if (!user || user.email?.toLowerCase() !== process.env.ADMIN_EMAIL?.toLowerCase()) {
-    redirect('/');
+type AdminData = {
+  visitCount: number;
+  recentVisits: Visit[];
+  groups: Group[];
+  telegramChats: TelegramChat[];
+  authUsers: AuthUser[];
+};
+
+export default function AdminPage() {
+  const { user, loading } = useAuth();
+  const [data, setData] = useState<AdminData | null>(null);
+  const [fetching, setFetching] = useState(false);
+  const [unauthorized, setUnauthorized] = useState(false);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      setUnauthorized(true);
+      return;
+    }
+
+    setFetching(true);
+    fetch('/api/admin/data')
+      .then(res => {
+        if (res.status === 403) { setUnauthorized(true); return null; }
+        return res.json();
+      })
+      .then(json => { if (json) setData(json); })
+      .finally(() => setFetching(false));
+  }, [user, loading]);
+
+  if (loading || fetching) {
+    return <div className="min-h-screen flex items-center justify-center text-gray-500">Loading…</div>;
   }
 
-  const admin = createSupabaseAdmin();
+  if (unauthorized || !data) {
+    return <div className="min-h-screen flex items-center justify-center text-gray-500">Access denied.</div>;
+  }
 
-  const [
-    { data: visits, count: visitCount },
-    { data: recentVisits },
-    { data: groups },
-    { data: telegramChats },
-    { data: { users: authUsers } },
-  ] = await Promise.all([
-    admin.from('visits').select('*', { count: 'exact', head: true }),
-    admin.from('visits').select('*').order('created_at', { ascending: false }).limit(50),
-    admin.from('groups').select('*, group_members(count)').order('created_at', { ascending: false }),
-    admin.from('telegram_chats').select('*').order('created_at', { ascending: false }),
-    admin.auth.admin.listUsers({ perPage: 100 }),
-  ]);
+  const { visitCount, recentVisits, groups, telegramChats, authUsers } = data;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -40,7 +62,6 @@ export default async function AdminPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-10">
-        {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatCard label="Total visits" value={visitCount ?? 0} icon="👁" />
           <StatCard label="Users" value={authUsers?.length ?? 0} icon="👤" />
@@ -48,7 +69,6 @@ export default async function AdminPage() {
           <StatCard label="Telegram subs" value={telegramChats?.length ?? 0} icon="✈️" />
         </div>
 
-        {/* Recent visits */}
         <Section title="Recent Visits" icon="👁">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -74,7 +94,6 @@ export default async function AdminPage() {
           </div>
         </Section>
 
-        {/* Users */}
         <Section title="Users" icon="👤">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -103,7 +122,6 @@ export default async function AdminPage() {
           </div>
         </Section>
 
-        {/* Groups */}
         <Section title="Groups" icon="👨‍👩‍👧">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -120,7 +138,7 @@ export default async function AdminPage() {
                   <tr key={g.id} className="hover:bg-gray-50">
                     <td className="py-2 pr-4 font-medium">{g.name}</td>
                     <td className="py-2 pr-4 font-mono text-orange-600 font-bold tracking-widest">{g.share_code}</td>
-                    <td className="py-2 pr-4 text-gray-600">{(g.group_members as { count: number }[])?.[0]?.count ?? 0}</td>
+                    <td className="py-2 pr-4 text-gray-600">{g.group_members?.[0]?.count ?? 0}</td>
                     <td className="py-2 text-xs text-gray-400">{new Date(g.created_at).toLocaleDateString('en-IN')}</td>
                   </tr>
                 ))}
@@ -129,7 +147,6 @@ export default async function AdminPage() {
           </div>
         </Section>
 
-        {/* Telegram */}
         <Section title="Telegram Subscribers" icon="✈️">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
