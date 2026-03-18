@@ -3,14 +3,14 @@
 import { DAYS } from '../data/weeklyPlan';
 import { DietMode, CuisineType } from '../types';
 
-const DIET_MODES: { value: DietMode; label: string; activeClass: string }[] = [
-  { value: 'all',          label: '🍽 All',              activeClass: 'bg-orange-500 text-white' },
-  { value: 'maha-veg',     label: '🥬 Maha Veg',         activeClass: 'bg-green-600 text-white' },
-  { value: 'non-veg',      label: '🍗 Non-Veg',          activeClass: 'bg-red-500 text-white' },
-  { value: 'mix',          label: '🥗 Mix',              activeClass: 'bg-yellow-500 text-white' },
-  { value: 'eggetarian',   label: '🥚 Eggetarian',       activeClass: 'bg-yellow-400 text-gray-800' },
-  { value: 'vegan',        label: '🌱 Vegan',            activeClass: 'bg-emerald-500 text-white' },
-  { value: 'kids-tiffin',  label: '🧒 Kids Tiffin',      activeClass: 'bg-pink-500 text-white' },
+const DIET_MODE_OPTIONS: { value: DietMode; label: string }[] = [
+  { value: 'all',          label: '🍽 All Recipes' },
+  { value: 'veg',          label: '🥬 Vegetarian' },
+  { value: 'non-veg',      label: '🍗 Non-Veg' },
+  { value: 'mix',          label: '🥗 Mix (Veg + Non-Veg)' },
+  { value: 'eggetarian',   label: '🥚 Eggetarian' },
+  { value: 'vegan',        label: '🌱 Vegan' },
+  { value: 'kids-tiffin',  label: '🧒 Kids Tiffin' },
 ];
 
 const CUISINES: { value: CuisineType; label: string }[] = [
@@ -18,6 +18,7 @@ const CUISINES: { value: CuisineType; label: string }[] = [
   { value: 'maharashtrian', label: '🏯 Maharashtrian' },
   { value: 'north-indian',  label: '🌾 North Indian' },
   { value: 'south-indian',  label: '🌴 South Indian' },
+  { value: 'festive',       label: '🎉 Festive' },
 ];
 
 interface Props {
@@ -65,41 +66,42 @@ export default function FilterBar({
         </div>
       </div>
 
-      {/* Diet mode selector */}
-      <div className="overflow-x-auto pb-1 -mx-4 px-4">
-        <div className="flex gap-2 w-max">
-          {DIET_MODES.map(({ value, label, activeClass }) => (
-            <button
-              key={value}
-              onClick={() => onDietModeChange(value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                dietMode === value
-                  ? `${activeClass} shadow-sm`
-                  : 'bg-white text-gray-600 border border-gray-200 hover:border-orange-300'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+      {/* Diet mode + Cuisine row */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Diet mode dropdown */}
+        <div className="flex items-center gap-1.5">
+          <label htmlFor="diet-mode-select" className="text-xs font-semibold text-gray-500 whitespace-nowrap">
+            Diet:
+          </label>
+          <select
+            id="diet-mode-select"
+            value={dietMode}
+            onChange={(e) => onDietModeChange(e.target.value as DietMode)}
+            className="text-xs font-medium bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-700 focus:outline-none focus:border-orange-400 cursor-pointer"
+          >
+            {DIET_MODE_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
         </div>
-      </div>
 
-      {/* Regional cuisine selector */}
-      <div className="overflow-x-auto pb-1 -mx-4 px-4">
-        <div className="flex gap-2 w-max">
-          {CUISINES.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => onCuisineChange(value)}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                cuisineFilter === value
-                  ? 'bg-orange-500 text-white shadow-sm'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:border-orange-300'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
+        {/* Regional cuisine pills */}
+        <div className="overflow-x-auto -mx-0 flex-1">
+          <div className="flex gap-2 w-max">
+            {CUISINES.map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => onCuisineChange(value)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                  cuisineFilter === value
+                    ? 'bg-orange-500 text-white shadow-sm'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-orange-300'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

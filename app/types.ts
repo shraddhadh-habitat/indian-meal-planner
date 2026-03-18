@@ -1,7 +1,7 @@
 export type MealType = 'breakfast' | 'lunch' | 'dinner';
 export type DietType = 'veg' | 'non-veg';
-export type DietMode = 'all' | 'maha-veg' | 'non-veg' | 'mix' | 'eggetarian' | 'vegan' | 'kids-tiffin';
-export type CuisineType = 'all' | 'south-indian' | 'maharashtrian' | 'north-indian';
+export type DietMode = 'all' | 'veg' | 'non-veg' | 'mix' | 'eggetarian' | 'vegan' | 'kids-tiffin';
+export type CuisineType = 'all' | 'south-indian' | 'maharashtrian' | 'north-indian' | 'festive';
 
 export interface Recipe {
   id: string;
@@ -35,7 +35,7 @@ export interface FestiveRecipe {
 export interface Festival {
   id: string;
   name: string;
-  cuisine: Exclude<CuisineType, 'all'>;
+  cuisine: Exclude<CuisineType, 'all' | 'festive'>;
   emoji: string;
   season: string; // e.g. "August–September"
   recipes: FestiveRecipe[];

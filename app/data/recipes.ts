@@ -1,6 +1,9 @@
 import { Recipe } from '../types';
+import { eggetarianRecipes } from './eggetarianRecipes';
+import { veganRecipes } from './veganRecipes';
+import { kidsTiffinRecipes } from './kidsTiffinRecipes';
 
-export const recipes: Recipe[] = [
+const coreRecipes: Recipe[] = [
   // ─── BREAKFAST ────────────────────────────────────────────────────────────
   {
     id: 'besan-chilla',
@@ -909,6 +912,13 @@ export const recipes: Recipe[] = [
       'Serve tendli sabzi, masoor dal and koshimbir together with 2 bhakri per person.',
     ],
   },
+];
+
+export const recipes: Recipe[] = [
+  ...coreRecipes,
+  ...eggetarianRecipes,
+  ...veganRecipes,
+  ...kidsTiffinRecipes,
 ];
 
 export const getRecipeById = (id: string): Recipe | undefined =>
