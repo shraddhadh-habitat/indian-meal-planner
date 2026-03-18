@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Recipe, WeeklyPlan, DietMode, CuisineType, AllergyItem } from './types';
+import { Recipe, WeeklyPlan, DietMode, AllergyItem } from './types';
 import { getRecipeById } from './data/recipes';
 import { DAYS, fixedDefaultPlan, generateShuffledPlan, generatePlanForDietMode } from './data/weeklyPlan';
 import { recipeIsSafe } from './lib/allergyUtils';
@@ -23,7 +23,6 @@ export default function Home() {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [selectedDay, setSelectedDay] = useState<string | 'all'>('all');
   const [dietMode, setDietMode] = useState<DietMode>('all');
-  const [cuisineFilter, setCuisineFilter] = useState<CuisineType>('all');
   const [servings, setServings] = useState(3);
   const [avoidances, setAvoidances] = useState<AllergyItem[]>([]);
   const [ibsMode, setIbsMode] = useState(false);
@@ -105,15 +104,7 @@ export default function Home() {
   const mealPassesFilter = (recipeId: string) => {
     const recipe = getRecipeById(recipeId);
     if (!recipe) return false;
-
-    if (cuisineFilter !== 'all') {
-      const effectiveCuisine = recipe.cuisine ?? 'maharashtrian';
-      if (effectiveCuisine !== cuisineFilter) return false;
-    }
-
-    if (!recipeIsSafe(recipe.ingredients, avoidances, ibsMode)) return false;
-
-    return true;
+    return recipeIsSafe(recipe.ingredients, avoidances, ibsMode);
   };
 
   const dayPassesDietFilter = (day: string) => {
@@ -195,8 +186,6 @@ export default function Home() {
           onDayChange={setSelectedDay}
           dietMode={dietMode}
           onDietModeChange={handleDietModeChange}
-          cuisineFilter={cuisineFilter}
-          onCuisineChange={setCuisineFilter}
         />
 
         {/* Allergy & avoidance filter */}
@@ -207,65 +196,60 @@ export default function Home() {
           onIbsModeChange={setIbsMode}
         />
 
-        {/* Festive view — shown when Festive cuisine is selected */}
-        {cuisineFilter === 'festive' ? (
-          <FestiveSection servings={servings} avoidances={avoidances} ibsMode={ibsMode} />
+        {/* Meal plan grid */}
+        {filteredDays.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
+            <p className="text-4xl mb-3">🥗</p>
+            <p className="font-medium">No meals match this filter.</p>
+            <p className="text-sm mt-1">Try a different diet mode.</p>
+          </div>
         ) : (
-          /* Meal plan grid */
-          filteredDays.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
-              <p className="text-4xl mb-3">🥗</p>
-              <p className="font-medium">No meals match this filter.</p>
-              <p className="text-sm mt-1">Try a different diet or cuisine filter.</p>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {filteredDays.map((day) => {
-                const meals = plan[day];
-                if (!meals) return null;
+          <div className="space-y-6">
+            {filteredDays.map((day) => {
+              const meals = plan[day];
+              if (!meals) return null;
 
-                const mealEntries: Array<{ type: 'breakfast' | 'lunch' | 'dinner'; id: string }> = [
-                  { type: 'breakfast', id: meals.breakfast },
-                  { type: 'lunch', id: meals.lunch },
-                  { type: 'dinner', id: meals.dinner },
-                ];
+              const mealEntries: Array<{ type: 'breakfast' | 'lunch' | 'dinner'; id: string }> = [
+                { type: 'breakfast', id: meals.breakfast },
+                { type: 'lunch', id: meals.lunch },
+                { type: 'dinner', id: meals.dinner },
+              ];
 
-                const visibleMeals = mealEntries.filter((m) => mealPassesFilter(m.id));
+              const visibleMeals = mealEntries.filter((m) => mealPassesFilter(m.id));
 
-                return (
-                  <section
-                    key={day}
-                    className={`transition-opacity duration-300 ${shuffling ? 'opacity-40' : 'opacity-100'}`}
-                  >
-                    {/* Day header */}
-                    <div className="flex items-center gap-3 mb-3">
-                      <h2 className="text-base font-bold text-gray-800">{day}</h2>
-                      <div className="h-px flex-1 bg-orange-200" />
-                      <DayProteinBadge meals={meals} servings={servings} />
-                    </div>
-
-                    {/* Meal cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {visibleMeals.map(({ type, id }) => {
-                        const recipe = getRecipeById(id);
-                        if (!recipe) return null;
-                        return (
-                          <MealCard
-                            key={type}
-                            recipe={recipe}
-                            mealType={type}
-                            servings={servings}
-                            onClick={() => handleMealClick(id)}
-                          />
-                        );
-                      })}
-                    </div>
-                  </section>
-                );
-              })}
-            </div>
-          )
+              return (
+                <section
+                  key={day}
+                  className={`transition-opacity duration-300 ${shuffling ? 'opacity-40' : 'opacity-100'}`}
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <h2 className="text-base font-bold text-gray-800">{day}</h2>
+                    <div className="h-px flex-1 bg-orange-200" />
+                    <DayProteinBadge meals={meals} servings={servings} />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {visibleMeals.map(({ type, id }) => {
+                      const recipe = getRecipeById(id);
+                      if (!recipe) return null;
+                      return (
+                        <MealCard
+                          key={type}
+                          recipe={recipe}
+                          mealType={type}
+                          servings={servings}
+                          onClick={() => handleMealClick(id)}
+                        />
+                      );
+                    })}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
         )}
+
+        {/* Festive recipes — always visible */}
+        <FestiveSection servings={servings} avoidances={avoidances} ibsMode={ibsMode} />
 
         {/* Footer */}
         <footer className="text-center text-xs text-gray-400 py-6 border-t border-orange-100">
