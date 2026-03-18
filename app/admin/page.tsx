@@ -16,15 +16,28 @@ type AdminData = {
   authUsers: AuthUser[];
 };
 
+const ADMIN_EMAIL = 'shraddhadh@gmail.com';
+
 export default function AdminPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [data, setData] = useState<AdminData | null>(null);
 
+  const isAdmin = user?.email?.toLowerCase() === ADMIN_EMAIL;
+
   useEffect(() => {
+    if (!isAdmin) return;
     fetch('/api/admin/data')
       .then(res => res.json())
       .then(json => setData(json));
-  }, []);
+  }, [isAdmin]);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center text-gray-500">Loading…</div>;
+  }
+
+  if (!isAdmin) {
+    return <div className="min-h-screen flex items-center justify-center text-gray-500">Access denied.</div>;
+  }
 
   if (!data) {
     return <div className="min-h-screen flex items-center justify-center text-gray-500">Loading…</div>;
