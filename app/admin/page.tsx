@@ -38,7 +38,7 @@ export default function AdminPage() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold">Bhojan Planner — Admin</h1>
-            <p className="text-orange-100 text-sm mt-0.5">Logged in as {user.email}</p>
+            <p className="text-orange-100 text-sm mt-0.5">Logged in as {user?.email}</p>
           </div>
           <a href="/" className="text-sm text-white/80 hover:text-white underline">← Back to app</a>
         </div>
