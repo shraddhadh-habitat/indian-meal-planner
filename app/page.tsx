@@ -1,18 +1,20 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
-import { Recipe, WeeklyPlan } from './types';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { Recipe, WeeklyPlan, DietMode, CuisineType, AllergyItem } from './types';
 import { getRecipeById } from './data/recipes';
 import { DAYS, fixedDefaultPlan, generateShuffledPlan } from './data/weeklyPlan';
+import { recipeIsSafe } from './lib/allergyUtils';
 import MealCard from './components/MealCard';
 import RecipeModal from './components/RecipeModal';
 import ProteinDashboard from './components/ProteinDashboard';
 import FilterBar from './components/FilterBar';
+import AllergyFilter from './components/AllergyFilter';
 import AuthButton from './components/AuthButton';
 import GroupPanel from './components/GroupPanel';
+import FestiveSection from './components/FestiveSection';
 import { useAuth } from './providers';
 
-const SERVINGS = 3;
 const RECIPE_COUNT = 55;
 
 export default function Home() {
@@ -20,10 +22,15 @@ export default function Home() {
   const [plan, setPlan] = useState<WeeklyPlan>(fixedDefaultPlan);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [selectedDay, setSelectedDay] = useState<string | 'all'>('all');
-  const [dietFilter, setDietFilter] = useState<'all' | 'veg' | 'non-veg'>('all');
+  const [dietMode, setDietMode] = useState<DietMode>('all');
+  const [cuisineFilter, setCuisineFilter] = useState<CuisineType>('all');
+  const [servings, setServings] = useState(3);
+  const [avoidances, setAvoidances] = useState<AllergyItem[]>([]);
+  const [ibsMode, setIbsMode] = useState(false);
   const [shuffling, setShuffling] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
+  const prefSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleShuffle = useCallback(() => {
     setShuffling(true);
@@ -48,16 +55,68 @@ export default function Home() {
     }).catch(() => {});
   }, [plan, activeGroupId]);
 
+  // Load preferences: localStorage first, then Supabase if signed in
+  useEffect(() => {
+    const stored = localStorage.getItem('bhojan-prefs');
+    if (stored) {
+      try {
+        const p = JSON.parse(stored);
+        if (Array.isArray(p.avoidances)) setAvoidances(p.avoidances);
+        if (typeof p.ibsMode === 'boolean') setIbsMode(p.ibsMode);
+        if (typeof p.servings === 'number') setServings(p.servings);
+      } catch { /* ignore */ }
+    }
+    if (user) {
+      fetch('/api/preferences')
+        .then((r) => r.ok ? r.json() : null)
+        .then((p) => {
+          if (!p) return;
+          if (Array.isArray(p.avoidances)) setAvoidances(p.avoidances);
+          if (typeof p.ibs_mode === 'boolean') setIbsMode(p.ibs_mode);
+          if (typeof p.servings === 'number') setServings(p.servings);
+        })
+        .catch(() => {});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  // Persist preferences on change (localStorage always; Supabase when signed in, debounced)
+  useEffect(() => {
+    const prefs = { avoidances, ibsMode, servings };
+    localStorage.setItem('bhojan-prefs', JSON.stringify(prefs));
+    if (!user) return;
+    if (prefSaveTimer.current) clearTimeout(prefSaveTimer.current);
+    prefSaveTimer.current = setTimeout(() => {
+      fetch('/api/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avoidances, ibs_mode: ibsMode, servings }),
+      }).catch(() => {});
+    }, 1000);
+  }, [avoidances, ibsMode, servings, user]);
+
   const visibleDays = selectedDay === 'all' ? DAYS : [selectedDay];
 
   const mealPassesFilter = (recipeId: string) => {
-    if (dietFilter === 'all') return true;
     const recipe = getRecipeById(recipeId);
-    return recipe?.diet === dietFilter;
+    if (!recipe) return false;
+
+    if (dietMode !== 'all') {
+      const effectiveDietMode = recipe.dietMode ?? 'maha-veg';
+      if (effectiveDietMode !== dietMode) return false;
+    }
+
+    if (cuisineFilter !== 'all') {
+      const effectiveCuisine = recipe.cuisine ?? 'maharashtrian';
+      if (effectiveCuisine !== cuisineFilter) return false;
+    }
+
+    if (!recipeIsSafe(recipe.ingredients, avoidances, ibsMode)) return false;
+
+    return true;
   };
 
   const dayPassesDietFilter = (day: string) => {
-    if (dietFilter === 'all') return true;
     const meals = plan[day];
     if (!meals) return false;
     return [meals.breakfast, meals.lunch, meals.dinner].some(mealPassesFilter);
@@ -75,9 +134,24 @@ export default function Home() {
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
                 🍛 Bhojan Planner
               </h1>
-              <p className="text-orange-100 text-sm mt-1">
-                Weekly Indian meal plan · {SERVINGS} people
-              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-orange-100 text-sm">Weekly Indian meal plan</p>
+                <label className="flex items-center gap-1.5 bg-white/20 rounded-full px-2 py-0.5">
+                  <span className="text-orange-100 text-xs">👥</span>
+                  <select
+                    value={servings}
+                    onChange={(e) => setServings(Number(e.target.value))}
+                    className="bg-transparent text-white text-xs font-semibold border-none outline-none cursor-pointer appearance-none"
+                    aria-label="Number of people"
+                  >
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n} className="text-gray-800 bg-white">
+                        {n} {n === 1 ? 'person' : 'people'}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
             </div>
             <div className="flex flex-col gap-2 items-end">
               <AuthButton />
@@ -113,14 +187,24 @@ export default function Home() {
         )}
 
         {/* Protein dashboard */}
-        {showDashboard && <ProteinDashboard plan={plan} servings={SERVINGS} />}
+        {showDashboard && <ProteinDashboard plan={plan} servings={servings} />}
 
         {/* Filter bar */}
         <FilterBar
           selectedDay={selectedDay}
           onDayChange={setSelectedDay}
-          dietFilter={dietFilter}
-          onDietChange={setDietFilter}
+          dietMode={dietMode}
+          onDietModeChange={setDietMode}
+          cuisineFilter={cuisineFilter}
+          onCuisineChange={setCuisineFilter}
+        />
+
+        {/* Allergy & avoidance filter */}
+        <AllergyFilter
+          avoidances={avoidances}
+          ibsMode={ibsMode}
+          onAvoidancesChange={setAvoidances}
+          onIbsModeChange={setIbsMode}
         />
 
         {/* Meal plan grid */}
@@ -153,7 +237,7 @@ export default function Home() {
                   <div className="flex items-center gap-3 mb-3">
                     <h2 className="text-base font-bold text-gray-800">{day}</h2>
                     <div className="h-px flex-1 bg-orange-200" />
-                    <DayProteinBadge meals={meals} servings={SERVINGS} />
+                    <DayProteinBadge meals={meals} servings={servings} />
                   </div>
 
                   {/* Meal cards */}
@@ -166,7 +250,7 @@ export default function Home() {
                           key={type}
                           recipe={recipe}
                           mealType={type}
-                          servings={SERVINGS}
+                          servings={servings}
                           onClick={() => handleMealClick(id)}
                         />
                       );
@@ -177,6 +261,9 @@ export default function Home() {
             })}
           </div>
         )}
+
+        {/* Festive recipes */}
+        <FestiveSection servings={servings} avoidances={avoidances} ibsMode={ibsMode} />
 
         {/* Footer */}
         <footer className="text-center text-xs text-gray-400 py-6 border-t border-orange-100">
@@ -193,8 +280,8 @@ export default function Home() {
       {/* Recipe modal */}
       <RecipeModal
         recipe={selectedRecipe}
+        servings={servings}
         onClose={() => setSelectedRecipe(null)}
-        servings={SERVINGS}
       />
     </div>
   );

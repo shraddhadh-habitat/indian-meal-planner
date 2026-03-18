@@ -96,13 +96,21 @@ export default function RecipeModal({ recipe, onClose, servings = 3 }: Props) {
 
           {/* Ingredients */}
           <div>
-            <h3 className="font-bold text-gray-800 text-base mb-3 flex items-center gap-2">
-              <span className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+            <h3 className="font-bold text-gray-800 text-base mb-3 flex items-center gap-2 flex-wrap">
+              <span className="w-6 h-6 bg-orange-500 text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
                 {recipe.ingredients.length}
               </span>
               Ingredients
-              <span className="text-xs text-gray-400 font-normal ml-1">
-                (for {recipe.servings} servings — scale as needed)
+              <span className="text-xs text-gray-400 font-normal">
+                (for {recipe.servings} servings
+                {servings !== recipe.servings && (
+                  <span className="ml-1 text-orange-600 font-semibold">
+                    — multiply by {(servings / recipe.servings) % 1 === 0
+                      ? servings / recipe.servings
+                      : (servings / recipe.servings).toFixed(1)}× for {servings}
+                  </span>
+                )}
+                )
               </span>
             </h3>
             <ul className="space-y-1.5">
