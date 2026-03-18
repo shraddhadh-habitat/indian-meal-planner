@@ -1,14 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createSupabaseServerClient, createSupabaseAdmin } from '@/lib/supabase-server';
+import { createSupabaseAdmin } from '@/lib/supabase-server';
 
 export async function GET() {
-  const supabase = await createSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user || user.email?.toLowerCase() !== process.env.ADMIN_EMAIL?.toLowerCase()) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  }
-
   const admin = createSupabaseAdmin();
 
   const [

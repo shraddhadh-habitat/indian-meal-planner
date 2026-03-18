@@ -17,34 +17,17 @@ type AdminData = {
 };
 
 export default function AdminPage() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const [data, setData] = useState<AdminData | null>(null);
-  const [fetching, setFetching] = useState(false);
-  const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
-    if (loading) return;
-    if (!user) {
-      setUnauthorized(true);
-      return;
-    }
-
-    setFetching(true);
     fetch('/api/admin/data')
-      .then(res => {
-        if (res.status === 403) { setUnauthorized(true); return null; }
-        return res.json();
-      })
-      .then(json => { if (json) setData(json); })
-      .finally(() => setFetching(false));
-  }, [user, loading]);
+      .then(res => res.json())
+      .then(json => setData(json));
+  }, []);
 
-  if (loading || fetching) {
+  if (!data) {
     return <div className="min-h-screen flex items-center justify-center text-gray-500">Loading…</div>;
-  }
-
-  if (unauthorized || !data) {
-    return <div className="min-h-screen flex items-center justify-center text-gray-500">Access denied.</div>;
   }
 
   const { visitCount, recentVisits, groups, telegramChats, authUsers } = data;
